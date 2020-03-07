@@ -1,0 +1,61 @@
+<head>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<div id="tester" style="width:600px;height:500px;"></div>
+
+<!--
+<script>
+	TESTER = document.getElementById('tester');
+	Plotly.newPlot( TESTER, [{
+	x: [1, 2, 3, 4, 5],
+	y: [1, 2, 4, 8, 16] }], {
+	margin: { t: 0 } } );
+</script>
+-->
+
+<script>
+Plotly.d3.csv(
+	//"https://raw.githubusercontent.com/plotly/datasets/master/2015_06_30_precipitation.csv",
+  "https://raw.githubusercontent.com/jaa46/ParkrunData/master/uk-parkruns.csv?token=AA7FV5ZN7PQBPEL2JZIEYPC6MQC5O",
+	function(err, rows) {
+		function unpack(rows, key) {
+			return rows.map(function(row) {
+				return row[key];
+			});
+		}
+
+		var data = [
+			{
+				type: "scattermapbox",        
+				text: unpack(rows, "Name"),
+				lon: unpack(rows, "Lat"),
+				lat: unpack(rows, "Lon"),
+        
+				marker: { color: "fuchsia", size: 8 }
+			}
+		];
+
+		var layout = {
+			dragmode: "zoom",
+			mapbox: { style: "stamen-terrain", center: { lat: 54, lon: -1.5 }, zoom: 4.6 },
+			margin: { r: 0, t: 0, b: 0, l: 0 }
+		};
+
+  	TESTER = document.getElementById('tester');
+    console.log(data);
+ 
+    for(let count = 0; count < data[0].text.length; count++){
+      if (data[0].text[count].includes("juniors")) {
+          data[0].text.splice(count, 1)
+          data[0].lat.splice(count, 1)
+          data[0].lon.splice(count, 1)
+          count--;
+      }
+    }
+    
+    console.log(data);
+		Plotly.newPlot("tester", data, layout);
+	}
+);
+</script>
