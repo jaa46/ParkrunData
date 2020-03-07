@@ -20,6 +20,10 @@
 -->
 
 <script>
+var id = prompt("Please enter athlete ID:");
+makePlot(id);
+
+function makePlot(athleteId){
 Plotly.d3.csv(
   "https://raw.githubusercontent.com/jaa46/ParkrunData/master/uk-parkruns.csv?token=AA7FV5ZN7PQBPEL2JZIEYPC6MQC5O",
 	function(err, rows) {
@@ -29,8 +33,9 @@ Plotly.d3.csv(
 			});
 		}
     
-    function determineColours(rows) {
-      let athleteData = findAthleteData();
+    function determineColours(rows, athleteId) {
+      let athleteData = findAthleteData(athleteId);
+      
       text = unpack(rows, "Name");
       
       colours = [];
@@ -54,8 +59,7 @@ Plotly.d3.csv(
       return colours;
     }
     
-    function findAthleteData(text) {
-        athleteId = '2375766';
+    function findAthleteData(athleteId) {
         $.ajax({
           url: 'https://cors-anywhere.herokuapp.com/http://www.parkrun.org.uk/results/athleteeventresultshistory/?athleteNumber=' + athleteId + '&eventNumber=0',
           async: false,
@@ -76,7 +80,7 @@ Plotly.d3.csv(
 				lat: unpack(rows, "Lon"),
         
 				marker: { 
-          color: determineColours(rows), 
+          color: determineColours(rows, athleteId), 
           size: 8,
           colorscale: scl          
           }
@@ -106,4 +110,5 @@ Plotly.d3.csv(
 		Plotly.newPlot("tester", data, layout);
 	}
 );
+}
 </script>
