@@ -1,5 +1,10 @@
 <head>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous" type="text/javascript"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" type="text/javascript"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.0/js.cookie.min.js" crossorigin="anonymous" type="text/javascript"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js" type="text/javascript"></script>
 </head>
 
 <div id="tester" style="width:600px;height:500px;"></div>
@@ -16,7 +21,6 @@
 
 <script>
 Plotly.d3.csv(
-	//"https://raw.githubusercontent.com/plotly/datasets/master/2015_06_30_precipitation.csv",
   "https://raw.githubusercontent.com/jaa46/ParkrunData/master/uk-parkruns.csv?token=AA7FV5ZN7PQBPEL2JZIEYPC6MQC5O",
 	function(err, rows) {
 		function unpack(rows, key) {
@@ -24,15 +28,58 @@ Plotly.d3.csv(
 				return row[key];
 			});
 		}
+    
+    function determineColours(rows) {
+      let athleteData = findAthleteData();
+      text = unpack(rows, "Name");
+      
+      colours = [];
+      for(let count = 0; count < text.length; count++){
+      
+        let eventname = text[count].toLowerCase();
+        eventname = eventname.replace(/ /g, '');
+        eventname = eventname.replace(/’/g, '');
+        
+        if(eventname === 'forestofdean'){eventname = 'forest-of-dean'};
+         
+        if(athleteData.find("a[href$='/" + eventname + "/results']").length > 0) {
+          colours.push(1);
+          console.log(text[count]);
+        }
+        else {
+          colours.push(0);
+        }
+      }
+      
+      return colours;
+    }
+    
+    function findAthleteData(text) {
+        athleteId = '2375766';
+        $.ajax({
+          url: 'https://cors-anywhere.herokuapp.com/http://www.parkrun.org.uk/results/athleteeventresultshistory/?athleteNumber=' + athleteId + '&eventNumber=0',
+          async: false,
+        }).done(function(data) {
+          athleteData = $(data);
+        });
+        return athleteData;
+    }
+    
+    scl = [[0, 'rgb(220,100,100)'], [1, 'rgb(0,255,0)']];
 
 		var data = [
 			{
-				type: "scattermapbox",        
+				type: "scattermapbox",    
+        mode: 'markers',        
 				text: unpack(rows, "Name"),
 				lon: unpack(rows, "Lat"),
 				lat: unpack(rows, "Lon"),
         
-				marker: { color: "fuchsia", size: 8 }
+				marker: { 
+          color: determineColours(rows), 
+          size: 8,
+          colorscale: scl          
+          }
 			}
 		];
 
@@ -50,6 +97,7 @@ Plotly.d3.csv(
           data[0].text.splice(count, 1)
           data[0].lat.splice(count, 1)
           data[0].lon.splice(count, 1)
+          data[0].marker.color.splice(count, 1)
           count--;
       }
     }
